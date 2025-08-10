@@ -1,0 +1,48 @@
+# NBA Salary Dashboard Requirements
+# Core web scraping, data processing, and web application libraries
+
+# Web scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Data processing and analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Web application framework
+Flask>=3.0.0
+Flask-CORS>=4.0.0
+
+# Data export formats
+openpyxl>=3.1.0     # For Excel export support
+
+# JSON handling (built into Python, but explicit for clarity)
+# json - built-in
+
+# Date/time handling (built-in)
+# datetime - built-in
+
+# Logging (built-in)
+# logging - built-in
+
+# Optional: Advanced scraping (uncomment if needed)
+# selenium>=4.15.0  # For JavaScript-heavy sites
+# scrapy>=2.11.0    # For more complex scraping projects
+
+# Optional: Data visualization (server-side)
+# matplotlib>=3.7.0
+# seaborn>=0.12.0
+# plotly>=5.17.0
+
+# Optional: Database support
+# sqlite3 - built-in
+# sqlalchemy>=2.0.0  # For advanced database operations
+
+# Optional: Production web server
+# gunicorn>=21.2.0   # WSGI server for production
+
+# Development and testing (optional)
+# pytest>=7.4.0
+# black>=23.0.0      # Code formatting
+# flake8>=6.0.0      # Code linting

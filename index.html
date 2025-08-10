@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Salary Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-basketball-ball"></i>
+                    <h1>NBA Salary Dashboard</h1>
+                </div>
+                <div class="header-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="total-players">---</span>
+                        <span class="stat-label">Players</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="total-payroll">$---</span>
+                        <span class="stat-label">Total Payroll</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="avg-salary">$---</span>
+                        <span class="stat-label">Avg Salary</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="overview">
+                    <i class="fas fa-chart-pie"></i>
+                    Overview
+                </button>
+                <button class="nav-tab" data-tab="teams">
+                    <i class="fas fa-users"></i>
+                    Teams
+                </button>
+                <button class="nav-tab" data-tab="players">
+                    <i class="fas fa-user"></i>
+                    Players
+                </button>
+                <button class="nav-tab" data-tab="analysis">
+                    <i class="fas fa-chart-line"></i>
+                    Analysis
+                </button>
+            </div>
+            <div class="controls">
+                <select id="season-select">
+                    <option value="2025">2024-25 Season</option>
+                    <option value="2024">2023-24 Season</option>
+                </select>
+                <button id="refresh-data" class="btn-primary">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Data
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main">
+        <div class="container">
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading NBA salary data...</p>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overview-tab" class="tab-content active">
+                <div class="dashboard-grid">
+                    <!-- Salary Distribution Chart -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-pie"></i> Salary Distribution</h3>
+                            <div class="card-controls">
+                                <button class="btn-icon" title="Download Chart">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salary-distribution-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Team Payroll Chart -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-bar"></i> Team Payrolls</h3>
+                            <div class="card-controls">
+                                <select id="payroll-sort">
+                                    <option value="total">Total Payroll</option>
+                                    <option value="average">Average Salary</option>
+                                    <option value="players">Player Count</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="team-payroll-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Earners -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-crown"></i> Highest Paid Players</h3>
+                            <div class="card-controls">
+                                <select id="top-players-count">
+                                    <option value="10">Top 10</option>
+                                    <option value="20">Top 20</option>
+                                    <option value="50">Top 50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="top-earners-list" class="player-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- League Stats -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-calculator"></i> League Statistics</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="median-salary">$---</span>
+                                    <span class="stat-title">Median Salary</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="max-salary">$---</span>
+                                    <span class="stat-title">Highest Salary</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="min-salary">$---</span>
+                                    <span class="stat-title">Lowest Salary</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="players-over-20m">---</span>
+                                    <span class="stat-title">Players > $20M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teams Tab -->
+            <div id="teams-tab" class="tab-content">
+                <div class="teams-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-list"></i> Team Payroll Rankings</h3>
+                            <div class="card-controls">
+                                <input type="text" id="team-search" placeholder="Search teams...">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="team-rankings" class="team-rankings"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-info-circle"></i> Team Details</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="team-details">
+                                <p class="placeholder">Select a team to view detailed salary information</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Players Tab -->
+            <div id="players-tab" class="tab-content">
+                <div class="players-controls">
+                    <div class="search-filters">
+                        <input type="text" id="player-search" placeholder="Search players...">
+                        <select id="team-filter">
+                            <option value="">All Teams</option>
+                        </select>
+                        <select id="salary-range-filter">
+                            <option value="">All Salaries</option>
+                            <option value="40000000+">$40M+</option>
+                            <option value="30000000+">$30M+</option>
+                            <option value="20000000+">$20M+</option>
+                            <option value="10000000+">$10M+</option>
+                            <option value="0-10000000">Under $10M</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-table"></i> Player Salaries</h3>
+                        <div class="card-controls">
+                            <button id="export-players" class="btn-secondary">
+                                <i class="fas fa-download"></i>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="players-table" class="table-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Tab -->
+            <div id="analysis-tab" class="tab-content">
+                <div class="analysis-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-area"></i> Salary Trends</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salary-trends-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-scatter"></i> Team Comparison</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="team-comparison-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-trophy"></i> Salary Insights</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="salary-insights" class="insights-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 NBA Salary Dashboard. Data sourced from public NBA salary databases.</p>
+            <div class="footer-links">
+                <a href="#" id="about-link">About</a>
+                <a href="#" id="data-sources-link">Data Sources</a>
+                <a href="https://github.com" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>About NBA Salary Dashboard</h2>
+            <p>This dashboard provides comprehensive visualization of NBA player salary data, organized by teams and players. The data is collected using web scraping techniques from public NBA salary databases.</p>
+            <h3>Features:</h3>
+            <ul>
+                <li>Interactive salary distribution charts</li>
+                <li>Team payroll comparisons</li>
+                <li>Player salary rankings</li>
+                <li>Statistical analysis and insights</li>
+                <li>Data export functionality</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
